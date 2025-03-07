@@ -39,30 +39,8 @@ arguments = [
     "-deny-permission-prompts",
     "-accept-lang=en-US",
 ]
-# 浏览器默认路径
-linux_paths = [
-    '/usr/bin/google-chrome',  # Chrome默认路径
-    '/usr/bin/chromium',  # Chromium默认路径
-    '/usr/bin/chromium-browser',  # Ubuntu Chromium默认路径
-    '/usr/bin/microsoft-edge',  # Edge默认路径
-    '/snap/bin/chromium',  # Snap安装的Chromium路径
-    '/usr/lib/chromium/chromium',  # 某些发行版的Chromium路径
-    '/usr/lib/chromium-browser/chromium-browser'
-]
 
-browser_path = None
-
-# 根据系统选择搜索路径
-default_paths = linux_paths
-
-# 如果未指定路径，则自动检测
-if not browser_path:
-    for path in default_paths:
-        if os.path.exists(path):
-            browser_path = path
-            break
-    if not browser_path:
-        raise FileNotFoundError("未找到可用的浏览器，请手动指定browser_path参数")
+browser_path = "/usr/bin/chromium-browser"
 
 app = FastAPI()
 
@@ -210,8 +188,6 @@ if __name__ == "__main__":
     else:
         log = True
 
-    uvicorn.run(app, host="0.0.0.0", port=SERVER_PORT)
     #打印环境变量
     print(f"路径密码为{PASSWORD}\n")
-    #输出浏览器路径
-    print(f"浏览器路径为{browser_path}")
+    uvicorn.run(app, host="0.0.0.0", port=SERVER_PORT)
