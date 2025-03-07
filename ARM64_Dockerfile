@@ -40,9 +40,11 @@ RUN apt-get update && \
 # Download and install specific version of Google Chrome
 WORKDIR /tmp
 RUN git clone https://gitee.com/Ganyu256/chromium.git
-WORKDIR /chromium
+RUN cd chromium
 RUN chmod +x install.sh
 RUN ./install.sh
+RUN cd ..
+RUN rm -r chromium
 
 # Install Python dependencies including pyvirtualdisplay
 RUN pip3 install --upgrade pip
