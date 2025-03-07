@@ -23,6 +23,8 @@ SERVER_PORT = int(os.getenv("SERVER_PORT", 8000))
 
 # 设置路径密码（可以改为从环境变量读取）
 PASSWORD = os.getenv("PASSWORD", "haha")
+#打印环境变量
+print(f"路径密码为{PASSWORD}\n")
 
 # Arguments to make the browser better for automation and less detectable.
 arguments = [
@@ -188,6 +190,4 @@ if __name__ == "__main__":
     else:
         log = True
 
-    #打印环境变量
-    print(f"路径密码为{PASSWORD}\n")
     uvicorn.run(app, host="0.0.0.0", port=SERVER_PORT)
