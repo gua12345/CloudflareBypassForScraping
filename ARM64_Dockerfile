@@ -1,16 +1,17 @@
-# Use an image with a desktop environment
-FROM kasmweb/ubuntu-jammy-desktop:1.16.1-rolling-daily
+# Use the official Ubuntu image as the base image
+FROM ubuntu:22.04
 
 # Set environment variables to avoid interactive prompts during build
 ENV DEBIAN_FRONTEND=noninteractive
+ENV DOCKERMODE=true
 
 # Install necessary packages for Xvfb and pyvirtualdisplay
-USER root
 RUN apt-get update && \
     apt-get install -y \
         python3 \
         python3-pip \
         nano \
+        git \
         wget \
         gnupg \
         ca-certificates \
@@ -37,7 +38,11 @@ RUN apt-get update && \
         && rm -rf /var/lib/apt/lists/*
 
 # Download and install specific version of Google Chrome
-RUN apt-get update && apt-get install -y chromium-browser && rm -rf /var/lib/apt/lists/*
+WORKDIR /tmp
+RUN git clone https://gitee.com/Ganyu256/chromium.git
+WORKDIR /chromium
+RUN chmod +x install.sh
+RUN ./install.sh
 
 # Install Python dependencies including pyvirtualdisplay
 RUN pip3 install --upgrade pip
@@ -53,12 +58,9 @@ COPY . .
 RUN pip3 install -r requirements.txt
 RUN pip3 install -r server_requirements.txt
 
+
 # Expose the port for the FastAPI server
 EXPOSE 8000
 
-# Copy and set up startup script
-COPY docker_startup.sh /
-RUN chmod +x /docker_startup.sh
-
-# Set the entrypoint directly to the startup script
-ENTRYPOINT ["/docker_startup.sh"]
+# Default command
+CMD ["python3", "server.py"]
