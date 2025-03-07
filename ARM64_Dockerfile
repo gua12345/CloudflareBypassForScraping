@@ -1,5 +1,5 @@
 # Use an image with a desktop environment
-FROM ubuntu:22.04
+FROM kasmweb/ubuntu-jammy-desktop:1.16.1-rolling-daily
 
 # Set environment variables to avoid interactive prompts during build
 ENV DEBIAN_FRONTEND=noninteractive
