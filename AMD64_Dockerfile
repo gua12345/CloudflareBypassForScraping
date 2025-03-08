@@ -1,5 +1,5 @@
 # Use an image with a desktop environment
-FROM ubuntu:22.04
+FROM kasmweb/desktop:1.16.0-rolling-daily
 
 # Set environment variables to avoid interactive prompts during build
 ENV DEBIAN_FRONTEND=noninteractive
@@ -36,7 +36,9 @@ RUN apt-get update && \
         && rm -rf /var/lib/apt/lists/*
 
 # Download and install specific version of Google Chrome
-RUN apt-get update && apt-get install -y chromium-browser && rm -rf /var/lib/apt/lists/*
+RUN wget https://mirror.cs.uchicago.edu/google-chrome/pool/main/g/google-chrome-stable/google-chrome-stable_126.0.6478.126-1_amd64.deb && \
+    dpkg -i google-chrome-stable_126.0.6478.126-1_amd64.deb && \
+    rm google-chrome-stable_126.0.6478.126-1_amd64.deb
 
 # Install Python dependencies including pyvirtualdisplay
 RUN pip3 install --upgrade pip
