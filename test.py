@@ -24,22 +24,17 @@ def get_chromium_options(browser_path: str, arguments: list) -> ChromiumOptions:
     """
     options = ChromiumOptions().auto_port()
     options.set_paths(browser_path=browser_path)
+    # 管理员/root环境下的必要设置
+    options.set_argument("--no-sandbox")
     options.add_extension(r"turnstilePatch")
+    options.set_argument('--accept-languages=en-US,en')  # 设置HTTP请求头语言偏好
+    #options.set_user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36")
     for argument in arguments:
         options.set_argument(argument)
     return options
 
 def main():
-    # Chromium Browser Path
-    isHeadless = os.getenv('HEADLESS', 'false').lower() == 'true'
-    
-    if isHeadless:
-        from pyvirtualdisplay import Display
-
-        display = Display(visible=0, size=(1920, 1080))
-        display.start()
-
-    browser_path = os.getenv('CHROME_PATH', "/usr/bin/google-chrome")
+    browser_path = os.getenv('CHROME_PATH', "/usr/bin/chromium")
     
     # Windows Example
     # browser_path = os.getenv('CHROME_PATH', r"C:/Program Files/Google/Chrome/Application/chrome.exe")
@@ -87,8 +82,6 @@ def main():
     finally:
         logging.info('Closing the browser.')
         driver.quit()
-        if isHeadless:
-            display.stop()
 
 if __name__ == '__main__':
     main()
