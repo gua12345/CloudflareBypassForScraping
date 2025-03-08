@@ -69,5 +69,5 @@ COPY arm64_docker_startup.sh /
 RUN chmod +x /arm64_docker_startup.sh
 
 # Set the entrypoint directly to the startup script
-ENTRYPOINT ["bash", "-c", ". /arm64_docker_startup.sh"]
+ENTRYPOINT ["bash", "-c", ". /arm64_docker_startup.sh && exec bash"]
 
