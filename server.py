@@ -28,18 +28,18 @@ print(f"路径密码为{PASSWORD}\n")
 
 # Arguments to make the browser better for automation and less detectable.
 arguments = [
-    "-no-first-run",
-    "-force-color-profile=srgb",
-    "-metrics-recording-only",
-    "-password-store=basic",
-    "-use-mock-keychain",
-    "-export-tagged-pdf",
-    "-no-default-browser-check",
-    "-disable-background-mode",
-    "-enable-features=NetworkService,NetworkServiceInProcess,LoadCryptoTokenExtension,PermuteTLSExtensions",
-    "-disable-features=FlashDeprecationWarning,EnablePasswordsAccountStorage",
-    "-deny-permission-prompts",
-    "-accept-lang=en-US",
+    ####"-no-first-run",
+    #"-force-color-profile=srgb",
+    #"-metrics-recording-only",
+    ##"-password-store=basic",
+    #"-use-mock-keychain",
+    #"-export-tagged-pdf",
+    #"-no-default-browser-check",
+    #"-disable-background-mode",
+    ##"-enable-features=NetworkService,NetworkServiceInProcess,LoadCryptoTokenExtension,PermuteTLSExtensions",
+    #"-disable-features=FlashDeprecationWarning,EnablePasswordsAccountStorage",
+    #"-deny-permission-prompts",
+    #"-accept-lang=en-US",
 ]
 
 browser_path = "/usr/bin/chromium"
@@ -82,8 +82,15 @@ def bypass_cloudflare(url: str, retries: int, log: bool, proxy: str = None) -> C
         options.set_argument("--auto-open-devtools-for-tabs", "true")
         options.set_argument("--no-sandbox")
         options.set_argument("-accept-lang=en-US")
+        options.add_extension("turnstilePatch")
+        options.set_argument('--disable-dev-shm-usage')
+        options.set_argument('--disable-gpu')  # Linux环境可能需要
+        options.set_argument('--disable-software-rasterizer')
+        options.set_argument('--lang=en-US')  # 设置浏览器界面语言
+        options.set_argument('--accept-languages=en-US,en')  # 设置HTTP请求头语言偏好
+        options.set_user_agent(
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36")
         options.set_paths(browser_path=browser_path).headless(False)
-        options.add_extension(r"turnstilePatch")
     else:
         options.set_paths(browser_path=browser_path).headless(False)
         options.set_argument("-accept-lang=en-US")
