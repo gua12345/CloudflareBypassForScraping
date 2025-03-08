@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# 函数：查找可用的DISPLAY
+# 函数：查找可用的 DISPLAY
 find_free_display() {
     local display_num=1
     while true; do
@@ -14,7 +14,7 @@ find_free_display() {
     done
 }
 
-# 自动获取可用的DISPLAY
+# 自动获取可用的 DISPLAY
 DISPLAY=$(find_free_display)
 echo "使用 DISPLAY=${DISPLAY}"
 
@@ -40,7 +40,7 @@ if [ -f "$LOCK_FILE" ]; then
 fi
 
 echo "启动 Xvfb..."
-Xvfb "$DISPLAY" -screen 0 1024x768x24 > xvfb.log 2>&1 &
+Xvfb "${DISPLAY}" -screen 0 1024x768x24 2>&1 | tee xvfb.log &
 XVFB_PID=$!
 sleep 2  # 等待 Xvfb 启动
 
@@ -48,9 +48,13 @@ sleep 2  # 等待 Xvfb 启动
 if ! ps -p "$XVFB_PID" > /dev/null 2>&1; then
     echo "Xvfb 启动失败，请检查 xvfb.log"
     exit 1
+else
+    echo "Xvfb 成功启动，PID: $XVFB_PID"
 fi
 
-export DISPLAY="$DISPLAY"
+export DISPLAY="${DISPLAY}"
+echo "设置 DISPLAY=${DISPLAY}"
+echo "当前 DISPLAY: $DISPLAY"
 
 echo "启动 Python 服务器..."
 python3 server.py
