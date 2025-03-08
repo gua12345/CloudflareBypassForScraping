@@ -25,7 +25,6 @@ SERVER_PORT = int(os.getenv("SERVER_PORT", 8000))
 PASSWORD = os.getenv("PASSWORD", "haha")
 # 打印环境变量
 print(f"路径密码为{PASSWORD}\n")
-
 # Arguments to make the browser better for automation and less detectable.
 arguments = [
     ####"-no-first-run",

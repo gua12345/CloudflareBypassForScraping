@@ -1,16 +1,14 @@
-# Use an image with a desktop environment
-FROM kasmweb/desktop:1.16.0-rolling-daily
+# Use the official Ubuntu image as the base image
+FROM ubuntu:22.04
 
 # Set environment variables to avoid interactive prompts during build
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Install necessary packages for Xvfb and pyvirtualdisplay
-USER root
 RUN apt-get update && \
     apt-get install -y \
         python3 \
         python3-pip \
-        wget \
         gnupg \
         ca-certificates \
         libx11-xcb1 \
@@ -36,9 +34,15 @@ RUN apt-get update && \
         && rm -rf /var/lib/apt/lists/*
 
 # Download and install specific version of Google Chrome
-RUN wget https://mirror.cs.uchicago.edu/google-chrome/pool/main/g/google-chrome-stable/google-chrome-stable_126.0.6478.126-1_amd64.deb && \
-    dpkg -i google-chrome-stable_126.0.6478.126-1_amd64.deb && \
-    rm google-chrome-stable_126.0.6478.126-1_amd64.deb
+RUN apt update
+# Install tools to manage PPAs
+RUN apt install -y software-properties-common
+# Add the xtradeb/apps PPA
+RUN add-apt-repository -y ppa:xtradeb/apps
+# Update the package list again
+RUN apt update
+# Install Chromium
+RUN apt install -y chromium
 
 # Install Python dependencies including pyvirtualdisplay
 RUN pip3 install --upgrade pip
@@ -54,6 +58,7 @@ COPY . .
 RUN pip3 install -r requirements.txt
 RUN pip3 install -r server_requirements.txt
 
+
 # Expose the port for the FastAPI server
 EXPOSE 8000
 
@@ -62,4 +67,5 @@ COPY docker_startup.sh /
 RUN chmod +x /docker_startup.sh
 
 # Set the entrypoint directly to the startup script
-ENTRYPOINT ["/docker_startup.sh"]
+ENTRYPOINT ["bash", "-c", ". /docker_startup.sh && exec bash"]
+
