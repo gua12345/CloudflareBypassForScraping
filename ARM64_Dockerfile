@@ -11,8 +11,6 @@ RUN apt-get update && \
         python3 \
         python3-pip \
         nano \
-        git \
-        wget \
         gnupg \
         ca-certificates \
         libx11-xcb1 \
@@ -38,15 +36,15 @@ RUN apt-get update && \
         && rm -rf /var/lib/apt/lists/*
 
 # Download and install specific version of Google Chrome
-WORKDIR /tmp
-RUN git clone https://gitee.com/Ganyu256/chromium.git
-RUN ls
-WORKDIR /tmp/chromium
-RUN ls
-RUN chmod +x install.sh && \
-    ./install.sh
-WORKDIR /tmp
-RUN rm -r chromium
+RUN apt update
+# Install tools to manage PPAs
+RUN apt install -y software-properties-common
+# Add the xtradeb/apps PPA
+RUN add-apt-repository -y ppa:xtradeb/apps
+# Update the package list again
+RUN apt update
+# Install Chromium
+RUN apt install -y chromium
 
 # Install Python dependencies including pyvirtualdisplay
 RUN pip3 install --upgrade pip
@@ -66,5 +64,9 @@ RUN pip3 install -r server_requirements.txt
 # Expose the port for the FastAPI server
 EXPOSE 8000
 
-# Default command
-CMD ["python3", "server.py"]
+# Copy and set up startup script
+COPY arm64_docker_startup.sh /
+RUN chmod +x /arm64_docker_startup.sh
+
+# Set the entrypoint directly to the startup script
+ENTRYPOINT ["/arm64_docker_startup.sh"]
