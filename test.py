@@ -31,10 +31,9 @@ def get_chromium_options(browser_path: str, arguments) -> ChromiumOptions:
     options.set_argument('--disable-dev-shm-usage')
     options.set_argument('--disable-gpu')  # Linux环境可能需要
     options.set_argument('--disable-software-rasterizer')
-    options.set_argument('--lang=en-US')  # 设置浏览器界面语言
-    options.set_argument('--accept-languages=en-US,en')  # 设置HTTP请求头语言偏好
-    options.set_user_agent(
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.3")
+    #options.set_argument('--lang=en-US')  # 设置浏览器界面语言
+    #options.set_argument('--accept-languages=en-US,en')  # 设置HTTP请求头语言偏好
+    #options.set_user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.3")
     for argument in arguments:
         options.set_argument(argument)
     return options
@@ -88,7 +87,6 @@ def main():
         logging.error("An error occurred: %s", str(e))
     finally:
         logging.info('Closing the browser.')
-        time.sleep(555)
         driver.quit()
 
 
