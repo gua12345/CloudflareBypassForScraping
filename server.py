@@ -18,12 +18,12 @@ import uvicorn
 import atexit
 
 # Check if running in Docker mode
-DOCKER_MODE = os.getenv("DOCKERMODE", "false").lower() == "true"
+DOCKER_MODE = os.getenv("DOCKERMODE", True)
 SERVER_PORT = int(os.getenv("SERVER_PORT", 8000))
 
 # 设置路径密码（可以改为从环境变量读取）
 PASSWORD = os.getenv("PASSWORD", "haha")
-#打印环境变量
+# 打印环境变量
 print(f"路径密码为{PASSWORD}\n")
 
 # Arguments to make the browser better for automation and less detectable.
@@ -42,7 +42,7 @@ arguments = [
     "-accept-lang=en-US",
 ]
 
-browser_path = "/usr/bin/chromium-browser"
+browser_path = "/usr/bin/chromium"
 
 app = FastAPI()
 
