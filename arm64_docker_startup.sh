@@ -52,9 +52,9 @@ else
     echo "Xvfb 成功启动，PID: $XVFB_PID"
 fi
 
-export DISPLAY="${DISPLAY}"
+export DISPLAY=$DISPLAY
 echo "设置 DISPLAY=${DISPLAY}"
-echo "当前 DISPLAY: $DISPLAY"
+echo "当前 DISPLAY$DISPLAY"
 
 echo "启动 Python 服务器..."
 python3 server.py
