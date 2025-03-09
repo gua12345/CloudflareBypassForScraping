@@ -1,4 +1,5 @@
 #相比原项目增加了什么
+
 1.路径密码，变量名为PASSWORD
 2.增加并优化了arm64的docker镜像，amd64未测试，但是理论上没问题
 # Cloudflare Turnstile Page & Captcha Bypass for Scraping
