@@ -2,7 +2,7 @@
 
 1. 路径密码，变量名为PASSWORD
 2. 增加并优化了arm64的docker镜像，amd64未测试，但是理论上没问题
-3. 新增了对ua的限制解除的cloudflare_ua_patch，可以开无头了，嘻嘻
+3. 新增了对ua的限制解除的cloudflare_ua_patch，~~可以开无头了，嘻嘻~~，开不了了，不嘻嘻
 4. 新增了对点击检测解除的turnstilePatch
 
 # Cloudflare Turnstile 页面验证绕过工具
