@@ -77,7 +77,7 @@ python server.py
 向所需端点发送GET请求，附带您想要绕过Cloudflare保护的网站URL。
 
 ```bash
-sarp@IdeaPad:~/$ curl http://127.0.0.1:8000/gua12345/cookies?url=https://nopecha.com/demo/cloudflare&user_agent=Mozilla/5.0%20(Windows%20NT%2010.0;%20Win64;%20x64)%20AppleWebKit/537.36%20(KHTML,%20like%20Gecko)%20Chrome/129.0.0.0%20Safari/537.36
+sarp@IdeaPad:~/$ curl "http://127.0.0.1:8000/gua12345/cookies?url=https://nopecha.com/demo/cloudflare&user_agent=Mozilla/5.0%20(Windows%20NT%2010.0;%20Win64;%20x64)%20AppleWebKit/537.36%20(KHTML,%20like%20Gecko)%20Chrome/129.0.0.0%20Safari/537.36"
 {"cookies":{"cf_clearance":"WVwnPg15ZmHeQuSp0LgmsLfdMd4WUFmMY9g7A.xFiYE-1743576949-1.2.1.1-oPLWfZFXYsDNn1m34U2WNuH3lCkGuTGtnSUEcM1BPZX.Dw1EGecnpA2zoZaO3sNObNec6g9zmqIq5vVmGYrtu_INf_Vs5V__.p74XLOeYie0Qr5RPkeoI.uFnrPlLMqKNgPa1dQOhIKRFIm6Zpb4.QIeb_y1FiesqfzANN_PWPOLzugWmEpe._lei_n9jRDw5HrBvLQ4H93D9i8pJB81pALBtKGPHY7u_H8Cqg72UpAUBOH5ucYOjEdtcHl0waNDLZeE4sh.VUkvhwX8gulXZspWlKJVkmLuHKRZKKFMuidRy1gh4osIPih7qzBK8OxiXjT2lsQzxFYVWjx1sVbje3LTEYeYoPg7GeINO6HYRCr_QhO5DCqvtag3E09gbYGw1diXyK2Z3ihaw847Lgd5HwzBepifrRHsaCuIw5QfkPU"},"user_agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36"}
 ```
 
