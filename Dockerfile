@@ -4,6 +4,8 @@ FROM ubuntu:22.04
 # Set environment variables to avoid interactive prompts during build
 ENV DEBIAN_FRONTEND=noninteractive
 
+ENV HEADLESS=True
+
 # Install necessary packages for Xvfb and pyvirtualdisplay
 RUN apt-get update && \
     apt-get install -y \

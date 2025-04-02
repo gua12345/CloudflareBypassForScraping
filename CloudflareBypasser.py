@@ -1,11 +1,51 @@
 import time
 from DrissionPage import ChromiumPage
+import os
+import platform
+
+def get_browser_path():
+    """自动获取系统中已安装的浏览器路径"""
+    system = platform.system()
+    
+    if system == "Windows":
+        paths = [
+            os.path.expandvars(r"%ProgramFiles%\Google\Chrome\Application\chrome.exe"),
+            os.path.expandvars(r"%ProgramFiles(x86)%\Google\Chrome\Application\chrome.exe"),
+            os.path.expandvars(r"%ProgramFiles%\Mozilla Firefox\firefox.exe"),
+            os.path.expandvars(r"%ProgramFiles(x86)%\Mozilla Firefox\firefox.exe"),
+            os.path.expandvars(r"%ProgramFiles%\Microsoft\Edge\Application\msedge.exe"),
+            os.path.expandvars(r"%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge.exe"),
+        ]
+    elif system == "Linux":
+        paths = [
+            "/usr/bin/google-chrome",
+            "/usr/bin/chromium",
+            "/usr/bin/chromium-browser",
+            "/usr/bin/firefox",
+            "/snap/bin/chromium",
+        ]
+    elif system == "Darwin":  # macOS
+        paths = [
+            "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+            "/Applications/Firefox.app/Contents/MacOS/firefox",
+            "/Applications/Safari.app/Contents/MacOS/Safari",
+        ]
+    else:
+        return None
+
+    # 返回第一个存在的浏览器路径
+    for path in paths:
+        if os.path.exists(path):
+            return path
+            
+    return None
 
 class CloudflareBypasser:
     def __init__(self, driver: ChromiumPage, max_retries=-1, log=True):
         self.driver = driver
         self.max_retries = max_retries
         self.log = log
+        self.log_lang = os.getenv("LOG_LANG", "zh")  # 日志语言 zh/en
 
     def search_recursively_shadow_root_with_iframe(self,ele):
         if ele.shadow_root:
@@ -42,37 +82,52 @@ class CloudflareBypasser:
             return button
         else:
             # If the button is not found, search it recursively
-            self.log_message("Basic search failed. Searching for button recursively.")
+            self.log_message("基础搜索失败，正在递归查找按钮...")
             ele = self.driver.ele("tag:body")
             iframe = self.search_recursively_shadow_root_with_iframe(ele)
             if iframe:
                 button = self.search_recursively_shadow_root_with_cf_input(iframe("tag:body"))
             else:
-                self.log_message("Iframe not found. Button search failed.")
+                self.log_message("未找到iframe，按钮搜索失败")
             return button
 
     def log_message(self, message):
         if self.log:
+            if hasattr(self, 'log_lang') and self.log_lang == "en":
+                # 英文日志翻译
+                translations = {
+                    "基础搜索失败，正在递归查找按钮...": "Basic search failed. Searching for button recursively...",
+                    "未找到iframe，按钮搜索失败": "Iframe not found. Button search failed",
+                    "找到验证按钮，尝试点击...": "Verification button found. Attempting to click",
+                    "未找到验证按钮": "Verification button not found",
+                    "点击验证按钮时出错": "Error clicking verification button",
+                    "检查页面标题时出错": "Error checking page title",
+                    "超过最大重试次数，绕过失败": "Exceeded maximum retries. Bypass failed",
+                    "尝试 {0}: 检测到验证页面，正在尝试绕过...": "Attempt {0}: Verification page detected. Trying to bypass...",
+                    "成功绕过验证": "Bypass successful",
+                    "绕过验证失败": "Bypass failed"
+                }
+                message = translations.get(message, message)
             print(message)
 
     def click_verification_button(self):
         try:
             button = self.locate_cf_button()
             if button:
-                self.log_message("Verification button found. Attempting to click.")
+                self.log_message("找到验证按钮，尝试点击...")
                 button.click()
             else:
-                self.log_message("Verification button not found.")
+                self.log_message("未找到验证按钮")
 
         except Exception as e:
-            self.log_message(f"Error clicking verification button: {e}")
+            self.log_message(f"点击验证按钮时出错: {e}")
 
     def is_bypassed(self):
         try:
             title = self.driver.title.lower()
             return "just a moment" not in title
         except Exception as e:
-            self.log_message(f"Error checking page title: {e}")
+            self.log_message(f"检查页面标题时出错: {e}")
             return False
 
     def bypass(self):
@@ -81,16 +136,16 @@ class CloudflareBypasser:
 
         while not self.is_bypassed():
             if 0 < self.max_retries + 1 <= try_count:
-                self.log_message("Exceeded maximum retries. Bypass failed.")
+                self.log_message("超过最大重试次数，绕过失败")
                 break
 
-            self.log_message(f"Attempt {try_count + 1}: Verification page detected. Trying to bypass...")
+            self.log_message(f"尝试 {try_count + 1}: 检测到验证页面，正在尝试绕过...")
             self.click_verification_button()
 
             try_count += 1
             time.sleep(2)
 
         if self.is_bypassed():
-            self.log_message("Bypass successful.")
+            self.log_message("成功绕过验证")
         else:
-            self.log_message("Bypass failed.")
+            self.log_message("绕过验证失败")

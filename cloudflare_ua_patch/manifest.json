@@ -1,0 +1,27 @@
+{
+  "name": "UA Client Hints Modifier",
+  "version": "1.0",
+  "description": "根据UA自动设置Client Hints参数",
+  "manifest_version": 3,
+  "permissions": [
+    "declarativeNetRequest",
+    "storage",
+    "tabs"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["popup.html"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
