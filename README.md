@@ -4,6 +4,7 @@
 2. 增加并优化了arm64的docker镜像，amd64未测试，但是理论上没问题
 3. 新增了对ua的限制解除的cloudflare_ua_patch，~~可以开无头了，嘻嘻~~，开不了了，不嘻嘻
 4. 新增了对点击检测解除的turnstilePatch
+5. 新增获取Turnstile_Token
 
 # Cloudflare Turnstile 页面验证绕过工具
 
@@ -69,8 +70,8 @@ pip install -r server_requirements.txt
 python server.py
 ```
 
-提供两个端点：
-
+提供三个端点：
+- `/turnstile?url=<URL>&user_agent=<UA>&retries=<>&proxy=<>`: 返回网站的cookies(包括Cloudflare cookies和 Turnstile_token)
 - `/cookies?url=<URL>&user_agent=<UA>&retries=<>&proxy=<>`: 返回网站的cookies(包括Cloudflare cookies)
 - `/html?url=<URL>user_agent=<UA>&retries=<>&proxy=<>`: 返回网站的HTML内容
 

@@ -130,6 +130,20 @@ class CloudflareBypasser:
             self.log_message(f"检查页面标题时出错: {e}")
             return False
 
+    def is_turnstile(self):
+        try:
+            turnstile = self.driver.ele('tag:input@name=cf-turnstile-response')
+            turnstile_token = turnstile.value
+            if turnstile_token:
+                #print(turnstile_token)
+                return turnstile_token
+            else:
+                return ""
+        except Exception as e:
+            self.log_message(f"检查turnstile时出错: {e}")
+            return ""
+            
+
     def bypass(self):
         
         try_count = 0
@@ -149,3 +163,41 @@ class CloudflareBypasser:
             self.log_message("成功绕过验证")
         else:
             self.log_message("绕过验证失败")
+
+    def bypass_turnstile(self):
+        
+        try_count = 0
+
+        while not self.is_bypassed():
+            if 0 < self.max_retries + 1 <= try_count:
+                self.log_message("超过最大重试次数，绕过失败")
+                break
+
+            self.log_message(f"尝试 {try_count + 1}: 检测到验证页面，正在尝试绕过...")
+            self.click_verification_button()
+
+            try_count += 1
+            time.sleep(2)
+
+        if self.is_bypassed():
+            self.log_message("成功绕过turnstile前的challenge验证")
+        else:
+            self.log_message("绕过turnstile前的challenge验证失败")
+
+        try_count = 0
+
+        while not self.is_turnstile():
+            if 0 < self.max_retries + 1 <= try_count:
+                self.log_message("超过最大重试次数，绕过失败")
+                break
+
+            self.log_message(f"尝试 {try_count + 1}: 检测到验证页面，正在尝试绕过...")
+            self.click_verification_button()
+
+            try_count += 1
+            time.sleep(2)
+
+        if self.is_turnstile():
+            self.log_message("成功绕过turnstile验证")
+        else:
+            self.log_message("绕过turnstile验证失败")

@@ -85,9 +85,10 @@ def is_safe_url(url: str) -> bool:
 
 
 def bypass_cloudflare(
-    url: str, 
+    url: str,
     retries: int, 
-    log: bool, 
+    log: bool,
+    turnstile: bool = False,
     proxy: str = None, 
     user_agent: str = None
 ) -> ChromiumPage:
@@ -137,7 +138,10 @@ def bypass_cloudflare(
     try:
         driver.get(url)
         cf_bypasser = CloudflareBypasser(driver, retries, log)
-        cf_bypasser.bypass()
+        if turnstile:
+            cf_bypasser.bypass_turnstile()
+        else:
+            cf_bypasser.bypass()
         return driver
     except Exception as e:
         driver.quit()
@@ -196,6 +200,71 @@ async def get_cookies(
             raise ValueError("未能获取到cf_clearance cookie")
 
         cookies = {cookie.get("name", ""): cookie.get("value", " ") for cookie in driver.cookies()}
+        user_agent = driver.user_agent
+        driver.quit()
+        return CookieResponse(cookies=cookies, user_agent=user_agent)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/{password}/turnstile", response_model=CookieResponse)
+async def get_turnstile_cookies(
+        password: str = Depends(verify_password),
+        url: str = None,
+        retries: int = 5,
+        proxy: str = None,
+        user_agent: str = None
+) -> CookieResponse:
+    """获取经过Cloudflare验证后的cookies
+
+    Args:
+        password: 访问密码
+        url: 目标URL
+        retries: 重试次数(默认5)
+        proxy: 代理地址
+        user_agent: 自定义User-Agent
+
+    Returns:
+        CookieResponse: 包含cookies和UA的响应
+
+    Raises:
+        HTTPException: 请求参数错误或处理失败
+    """
+    if not is_safe_url(url):
+        raise HTTPException(status_code=400, detail="Invalid URL")
+    try:
+        driver = bypass_cloudflare(url, retries, log, True, proxy, user_agent)
+        retry_interval = 2
+        cf_clearance = None
+        retry_count = 0
+        turnstile_token = ''
+        while retry_count < retries:
+            cookies = driver.cookies()
+            for cookie in cookies:
+                if cookie['name'] == 'cf_clearance':
+                    cf_clearance = cookie['value']
+                    break
+            try:
+                turnstile = driver.ele('tag:input@name=cf-turnstile-response')
+                turnstile_token = turnstile.value
+            except Exception as e:
+                print(f"获取turnstile_token时出错: {e}")
+                pass
+            if cf_clearance and turnstile_token:
+                break
+
+            retry_count += 1
+            time.sleep(retry_interval)
+            if LOG_LANG == "zh":
+                print(f"正在第{retry_count}次尝试获取cf_clearance和turnstile_token...")
+            else:
+                print(f"Attempt {retry_count}: Trying to get cf_clearance and turnstile_token...")
+
+        if not cf_clearance:
+            raise ValueError("未能获取到cf_clearance cookie和turnstile_token")
+
+        cookies = {cookie.get("name", ""): cookie.get("value", " ") for cookie in driver.cookies()}
+        cookies["turnstile_token"] = turnstile_token
         user_agent = driver.user_agent
         driver.quit()
         return CookieResponse(cookies=cookies, user_agent=user_agent)
