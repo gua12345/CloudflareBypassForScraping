@@ -3,3 +3,4 @@ pydantic
 uvicorn
 PyVirtualDisplay
 DrissionPage==4.1.0.17
+psutil==5.5.1

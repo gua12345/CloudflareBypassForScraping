@@ -16,6 +16,8 @@ from pyvirtualdisplay import Display
 import uvicorn
 import atexit
 
+from proxy_manager import start_proxy_with_auth,stop_proxy
+
 # 环境变量配置
 SERVER_PORT = int(os.getenv("SERVER_PORT", 8000))  # Docker模式端口
 # 设置访问密码(从环境变量读取，默认gua12345)
@@ -93,7 +95,7 @@ def bypass_cloudflare(
         turnstile: bool = False,
         proxy: str = None,
         user_agent: str = None
-) -> ChromiumPage:
+)-> ChromiumPage:
     """绕过Cloudflare验证并返回浏览器实例
 
     Args:
@@ -104,7 +106,7 @@ def bypass_cloudflare(
         user_agent: 自定义User-Agent
 
     Returns:
-        ChromiumPage: 浏览器实例
+        tuple[ChromiumPage, str | None]: 浏览器实例和代理信息的元组
 
     Raises:
         Exception: 浏览器操作异常
@@ -119,6 +121,7 @@ def bypass_cloudflare(
     options.add_extension("cloudflare_ua_patch")
     options.set_paths(browser_path=browser_path)
     options.headless(os.getenv('HEADLESS', False))
+    options.ignore_certificate_errors(on_off=True)
     if user_agent:
         options.set_user_agent(user_agent)
     else:
@@ -133,9 +136,14 @@ def bypass_cloudflare(
         options.set_argument('--disable-dev-shm-usage')
         options.set_argument('--disable-gpu')
         options.set_argument('--disable-software-rasterizer')
+    no_auth_proxy = None
     if proxy:
         logging.info(f"使用代理: {proxy}")
-        options.set_proxy(proxy)
+        if '@' in proxy:
+            no_auth_proxy = start_proxy_with_auth(proxy)
+        else:
+            no_auth_proxy = proxy
+        options.set_proxy(no_auth_proxy)
 
     driver = ChromiumPage(addr_or_opts=options)
     try:
@@ -147,7 +155,7 @@ def bypass_cloudflare(
         else:
             logging.info("开始绕过普通验证")
             cf_bypasser.bypass()
-        return driver
+        return driver, no_auth_proxy
     except Exception as e:
         logging.error(f"绕过Cloudflare验证失败: {str(e)}")
         driver.quit()
@@ -179,11 +187,12 @@ async def get_cookies(
         HTTPException: 请求参数错误或处理失败
     """
     logging.info(f"收到cookies请求: {url}")
+    no_auth_proxy = None
     if not is_safe_url(url):
         logging.warning(f"不安全的URL: {url}")
         raise HTTPException(status_code=400, detail="Invalid URL")
     try:
-        driver = bypass_cloudflare(url, retries, True, False, proxy, user_agent)
+        driver,no_auth_proxy = bypass_cloudflare(url, retries, True, False, proxy, user_agent)
         retry_interval = 2
         cf_clearance = None
         retry_count = 0
@@ -212,6 +221,12 @@ async def get_cookies(
     except Exception as e:
         logging.error(f"获取cookies失败: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        if stop_proxy(no_auth_proxy):
+            logging.info("成功结束本地代理")
+        else:
+            logging.error("失败结束本地代理")
+
 
 
 @app.get("/{password}/turnstile", response_model=CookieResponse)
@@ -235,11 +250,12 @@ async def get_turnstile_cookies(
         HTTPException: 请求参数错误或处理失败
     """
     logging.info(f"收到turnstile请求: {url}")
+    no_auth_proxy = None
     if not is_safe_url(url):
         logging.warning(f"不安全的URL: {url}")
         raise HTTPException(status_code=400, detail="Invalid URL")
     try:
-        driver = bypass_cloudflare(url, retries, True, True, proxy, user_agent)
+        driver, no_auth_proxy = bypass_cloudflare(url, retries, True, True, proxy, user_agent)
         retry_interval = 2
         cf_clearance = None
         retry_count = 0
@@ -276,7 +292,11 @@ async def get_turnstile_cookies(
     except Exception as e:
         logging.error(f"获取turnstile cookies失败: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
-
+    finally:
+        if stop_proxy(no_auth_proxy):
+            logging.info("成功结束本地代理")
+        else:
+            logging.error("失败结束本地代理")
 
 # 修改后的html端点
 @app.get("/{password}/html")
@@ -303,11 +323,12 @@ async def get_html(
         HTTPException: 请求参数错误或处理失败
     """
     logging.info(f"收到HTML请求: {url}")
+    no_auth_proxy = None
     if not is_safe_url(url):
         logging.warning(f"不安全的URL: {url}")
         raise HTTPException(status_code=400, detail="Invalid URL")
     try:
-        driver = bypass_cloudflare(url, retries, True, False, proxy, user_agent)
+        driver, no_auth_proxy = bypass_cloudflare(url, retries, True, False, proxy, user_agent)
         html = driver.html
         cookies_json = {cookie.get("name", ""): cookie.get("value", " ") for cookie in driver.cookies()}
         response = Response(content=html, media_type="text/html")
@@ -319,7 +340,11 @@ async def get_html(
     except Exception as e:
         logging.error(f"获取HTML内容失败: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
-
+    finally:
+        if stop_proxy(no_auth_proxy):
+            logging.info("成功结束本地代理")
+        else:
+            logging.error("失败结束本地代理")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Cloudflare bypass api")
