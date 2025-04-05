@@ -2,22 +2,8 @@ import time
 import logging
 import os
 import platform
-from CloudflareBypasser import CloudflareBypasser,get_browser_path
+from CloudflareBypasser import CloudflareBypasser,get_browser_path,logging,LOG_LANG
 from DrissionPage import ChromiumPage, ChromiumOptions
-
-# 环境变量配置
-LOG_LANG = os.getenv("LOG_LANG", "zh")  # 日志语言 zh/en
-
-# 配置日志记录
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.StreamHandler(),
-        logging.FileHandler('cloudflare_bypass.log', mode='w')
-    ]
-)
-
 
 def get_chromium_options(browser_path: str, arguments, user_agent: str = None) -> ChromiumOptions:
     """
@@ -30,7 +16,6 @@ def get_chromium_options(browser_path: str, arguments, user_agent: str = None) -
     options = ChromiumOptions().auto_port()
     options.set_paths(browser_path=browser_path)
     # 基础配置，所有系统通用
-    options.set_argument("-accept-lang=en-US")
     options.add_extension("turnstilePatch")
     options.add_extension("cloudflare_ua_patch")
     options.headless(False)
@@ -42,8 +27,7 @@ def get_chromium_options(browser_path: str, arguments, user_agent: str = None) -
         options.set_argument('--disable-dev-shm-usage')
         options.set_argument('--disable-gpu')
         options.set_argument('--disable-software-rasterizer')
-        options.set_argument('--lang=en-US')
-        options.set_argument('--accept-languages=en-US,en')
+
     
     if user_agent:
         options.set_user_agent(user_agent)
@@ -59,9 +43,9 @@ def main():
     browser_path = os.getenv('CHROME_PATH', "")
     if not browser_path:
         if LOG_LANG == "zh":
-            print("未设置CHROME_PATH环境变量")
+            logging.warning("未设置CHROME_PATH环境变量,正在尝试自动查找浏览器路径")
         else:
-            print("CHROME_PATH environment variable not set")
+            print("The CHROME_PATH environment variable is not set, attempting to automatically find the browser path")
         browser_path = get_browser_path()
         if not browser_path:
             if LOG_LANG == "zh":
@@ -86,6 +70,9 @@ def main():
         "-enable-features=NetworkService,NetworkServiceInProcess,LoadCryptoTokenExtension,PermuteTLSExtensions",
         "-disable-features=FlashDeprecationWarning,EnablePasswordsAccountStorage",
         "-deny-permission-prompts",
+        "-accept-lang=en-US",
+        "--lang=en-US",
+        '--accept-languages=en-US,en',
     ]
 
     # 测试自定义UA功能
