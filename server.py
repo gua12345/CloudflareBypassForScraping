@@ -45,6 +45,7 @@ arguments = [
     "-accept-lang=en-US",
     "--lang=en-US",
     '--accept-languages=en-US,en',
+    "--window-size=512,512",
 ]
 
 browser_path = os.getenv('CHROME_PATH', "")
@@ -203,10 +204,13 @@ async def get_cookies(
         logging.error(f"获取cookies失败: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
     finally:
-        if stop_proxy(no_auth_proxy):
-            logging.info("成功结束本地代理")
-        else:
-            logging.error("失败结束本地代理")
+        try:
+            if stop_proxy(no_auth_proxy):
+                logging.info("成功结束本地代理")
+            else:
+                logging.error("失败结束本地代理")
+        except:
+            pass
 
 
 
@@ -274,10 +278,13 @@ async def get_turnstile_cookies(
         logging.error(f"获取turnstile cookies失败: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
     finally:
-        if stop_proxy(no_auth_proxy):
-            logging.info("成功结束本地代理")
-        else:
-            logging.error("失败结束本地代理")
+        try:
+            if stop_proxy(no_auth_proxy):
+                logging.info("成功结束本地代理")
+            else:
+                logging.error("失败结束本地代理")
+        except:
+            pass
 
 # 修改后的html端点
 @app.get("/{password}/html")
@@ -322,10 +329,13 @@ async def get_html(
         logging.error(f"获取HTML内容失败: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
     finally:
-        if stop_proxy(no_auth_proxy):
-            logging.info("成功结束本地代理")
-        else:
-            logging.error("失败结束本地代理")
+        try:
+            if stop_proxy(no_auth_proxy):
+                logging.info("成功结束本地代理")
+            else:
+                logging.error("失败结束本地代理")
+        except:
+            pass
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Cloudflare bypass api")

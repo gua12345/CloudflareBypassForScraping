@@ -2,7 +2,7 @@ import time
 from DrissionPage import ChromiumPage
 import os
 import logging
-from utils import get_browser_path, check_cf_clearance, LOG_LANG
+from utils import get_browser_path, check_cf_clearance, LOG_LANG, check_turnstile_token
 
 
 class CloudflareBypasser:
@@ -34,7 +34,7 @@ class CloudflareBypasser:
                     return result
         return None
 
-    def locate_cf_button(self):
+    def locate_cf_button(self,turnstile=False):
         button = None
         eles = self.driver.eles("tag:input")
         for ele in eles:
@@ -48,6 +48,13 @@ class CloudflareBypasser:
         else:
             # If the button is not found, search it recursively
             self.log_message("基础搜索失败，正在递归查找按钮...")
+            self.log_message("基础搜索失败，可能是过盾跳转太慢先检查是否已成功...")
+            if check_cf_clearance(self.driver,retries=3):
+                if turnstile:
+                    if check_turnstile_token(self.driver):
+                        return "success"
+                else:
+                    return "success"
             ele = self.driver.ele("tag:body")
             iframe = self.search_recursively_shadow_root_with_iframe(ele)
             if iframe:
@@ -80,9 +87,12 @@ class CloudflareBypasser:
                 message = translations.get(message, message)
             logging.info(message)
 
-    def click_verification_button(self):
+    def click_verification_button(self, turnstile=False):
         try:
-            button = self.locate_cf_button()
+            button = self.locate_cf_button(turnstile)
+            if button=="success":
+                self.log_message("过盾成功")
+                return True
             if button:
                 self.log_message("找到验证按钮，尝试点击...")
                 button.click()
@@ -151,7 +161,7 @@ class CloudflareBypasser:
                 self.log_message("超过最大重试次数，绕过失败")
                 break
             self.log_message(f"尝试 {try_count + 1}: 检测到验证页面，正在尝试绕过...")
-            self.click_verification_button()
+            self.click_verification_button(turnstile=True)
             try_count += 1
             time.sleep(2)
         if self.is_turnstile():

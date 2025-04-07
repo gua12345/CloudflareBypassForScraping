@@ -73,10 +73,9 @@ def get_browser_path():
 
     return None
 
-def check_cf_clearance(driver):
-    retries = 5
+def check_cf_clearance(driver,retries=5):
     retry_interval = 1
-    cf_clearance = None
+    cf_clearance = ""
     retry_count = 0
     while retry_count < retries:
         cookies = driver.cookies()
@@ -94,4 +93,18 @@ def check_cf_clearance(driver):
             logging.info(f"Attempt {retry_count}: Trying to get cf_clearance...")
     if not cf_clearance:
         logging.error("未能获取到cf_clearance cookie")
-        raise ValueError("未能获取到cf_clearance cookie")
+        return ""
+
+def check_turnstile_token(driver):
+    try:
+        turnstile = driver.ele('tag:input@name=cf-turnstile-response')
+        turnstile_token = turnstile.value
+        if turnstile_token:
+            logging.info(f"turnstile_token存在，已成功过盾")
+            return turnstile_token
+        else:
+            logging.info(f"turnstile_token不存在，未成功过盾")
+            return ""
+    except Exception as e:
+        logging.error(f"获取turnstile_token时出错: {e}")
+        return ""

@@ -74,6 +74,7 @@ def main():
         "-accept-lang=en-US",
         "--lang=en-US",
         '--accept-languages=en-US,en',
+        "--window-size=512,512",
     ]
 
     # 测试自定义UA功能
