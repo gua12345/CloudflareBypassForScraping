@@ -2,8 +2,10 @@ import time
 import logging
 import os
 import platform
-from CloudflareBypasser import CloudflareBypasser,get_browser_path,logging,LOG_LANG
+from CloudflareBypasser import CloudflareBypasser
 from DrissionPage import ChromiumPage, ChromiumOptions
+
+from utils import get_browser_path, logging, LOG_LANG
 
 def get_chromium_options(browser_path: str, arguments, user_agent: str = None) -> ChromiumOptions:
     """

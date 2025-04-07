@@ -1,80 +1,8 @@
 import time
 from DrissionPage import ChromiumPage
 import os
-import platform
 import logging
-
-# 环境变量配置
-LOG_LANG = os.getenv("LOG_LANG", "zh")  # 日志语言 zh/en
-
-# 定义日志颜色
-class ColoredFormatter(logging.Formatter):
-    COLORS = {
-        'INFO': '\033[94m',  # 蓝色
-        'WARNING': '\033[93m',  # 黄色
-        'ERROR': '\033[91m',  # 红色
-        'CRITICAL': '\033[91m',  # 红色
-        'DEBUG': '\033[92m',  # 绿色
-        'RESET': '\033[0m'  # 重置颜色
-    }
-
-    def format(self, record):
-        log_message = super().format(record)
-        if record.levelname in self.COLORS:
-            return f"{self.COLORS[record.levelname]}{log_message}{self.COLORS['RESET']}"
-        return log_message
-
-# 配置日志记录
-colored_formatter = ColoredFormatter('%(asctime)s - %(levelname)s - %(message)s')
-file_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-
-console_handler = logging.StreamHandler()
-console_handler.setFormatter(colored_formatter)
-
-file_handler = logging.FileHandler('cloudflare_bypass.log', mode='w')
-file_handler.setFormatter(file_formatter)
-
-logging.basicConfig(
-    level=logging.INFO,
-    handlers=[console_handler, file_handler]
-)
-
-
-def get_browser_path():
-    """自动获取系统中已安装的浏览器路径"""
-    system = platform.system()
-
-    if system == "Windows":
-        paths = [
-            os.path.expandvars(r"%ProgramFiles%\Google\Chrome\Application\chrome.exe"),
-            os.path.expandvars(r"%ProgramFiles(x86)%\Google\Chrome\Application\chrome.exe"),
-            os.path.expandvars(r"%ProgramFiles%\Mozilla Firefox\firefox.exe"),
-            os.path.expandvars(r"%ProgramFiles(x86)%\Mozilla Firefox\firefox.exe"),
-            os.path.expandvars(r"%ProgramFiles%\Microsoft\Edge\Application\msedge.exe"),
-            os.path.expandvars(r"%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge.exe"),
-        ]
-    elif system == "Linux":
-        paths = [
-            "/usr/bin/google-chrome",
-            "/usr/bin/chromium",
-            "/usr/bin/chromium-browser",
-            "/usr/bin/firefox",
-            "/snap/bin/chromium",
-        ]
-    elif system == "Darwin":  # macOS
-        paths = [
-            "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-            "/Applications/Firefox.app/Contents/MacOS/firefox",
-            "/Applications/Safari.app/Contents/MacOS/Safari",
-        ]
-    else:
-        return None
-    # 返回第一个存在的浏览器路径
-    for path in paths:
-        if os.path.exists(path):
-            return path
-
-    return None
+from utils import get_browser_path, check_cf_clearance, LOG_LANG
 
 
 class CloudflareBypasser:
@@ -166,7 +94,11 @@ class CloudflareBypasser:
     def is_bypassed(self):
         try:
             title = self.driver.title.lower()
-            return "just a moment" not in title
+            title_check = "just a moment" not in title and "请稍候…" not in title
+            clearance_check = False
+            if title_check:
+                clearance_check = check_cf_clearance(self.driver)
+            return title_check or clearance_check
         except Exception as e:
             self.log_message(f"检查页面标题时出错: {e}")
             return False

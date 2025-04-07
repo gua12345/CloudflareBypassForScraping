@@ -3,7 +3,7 @@ import re
 import os
 from urllib.parse import urlparse
 import time
-from CloudflareBypasser import CloudflareBypasser, get_browser_path, logging, LOG_LANG
+from CloudflareBypasser import CloudflareBypasser
 import platform
 from DrissionPage import ChromiumPage, ChromiumOptions
 from fastapi import FastAPI, HTTPException, Response, Depends
@@ -16,6 +16,7 @@ from pyvirtualdisplay import Display
 import uvicorn
 import atexit
 
+from utils import get_browser_path, logging, LOG_LANG
 from proxy_manager import start_proxy_with_auth,stop_proxy
 
 # 环境变量配置
@@ -193,26 +194,6 @@ async def get_cookies(
         raise HTTPException(status_code=400, detail="Invalid URL")
     try:
         driver,no_auth_proxy = bypass_cloudflare(url, retries, True, False, proxy, user_agent)
-        retry_interval = 2
-        cf_clearance = None
-        retry_count = 0
-        while retry_count < retries:
-            cookies = driver.cookies()
-            for cookie in cookies:
-                if cookie['name'] == 'cf_clearance':
-                    cf_clearance = cookie['value']
-                    break
-            if cf_clearance:
-                break
-            retry_count += 1
-            time.sleep(retry_interval)
-            if LOG_LANG == "zh":
-                logging.info(f"正在第{retry_count}次尝试获取cf_clearance...")
-            else:
-                logging.info(f"Attempt {retry_count}: Trying to get cf_clearance...")
-        if not cf_clearance:
-            logging.error("未能获取到cf_clearance cookie")
-            raise ValueError("未能获取到cf_clearance cookie")
         cookies = {cookie.get("name", ""): cookie.get("value", " ") for cookie in driver.cookies()}
         user_agent = driver.user_agent
         driver.quit()
