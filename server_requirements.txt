@@ -7,3 +7,5 @@ psutil==5.5.1
 mitmproxy==8.0.0
 werkzeug==2.3.8
 flask==2.0.3
+aiohttp
+typing-extensions
