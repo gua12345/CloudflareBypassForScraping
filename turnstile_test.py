@@ -24,7 +24,6 @@ def get_chromium_options(browser_path: str, arguments, user_agent: str = None) -
     
     # Linux 系统特殊配置
     if platform.system() == "Linux":
-        options.set_argument("--auto-open-devtools-for-tabs")
         options.set_argument("--no-sandbox")
         options.set_argument('--disable-dev-shm-usage')
         options.set_argument('--disable-gpu')

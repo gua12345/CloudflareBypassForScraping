@@ -215,7 +215,6 @@ def bypass_cloudflare(
 
     if platform.system() == "Linux":
         logging.info(f"[{time.time()}] 检测到Linux系统，应用特殊配置")
-        options.set_argument("--auto-open-devtools-for-tabs", "true")
         options.set_argument("--no-sandbox")
         options.set_argument("--disable-dev-shm-usage")
         options.set_argument("--disable-gpu")
